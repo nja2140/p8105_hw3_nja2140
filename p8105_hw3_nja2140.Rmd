@@ -5,18 +5,20 @@ Assignment: Homework 3
 output: github_document
 ---
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(p8105.datasets)
+library(ggridges)
 ```
 
-Problem 1: Instacart Data. Load the data from the p8105.datasets. Write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations
+Problem 1: Instacart Data. Load the data from the p8105.datasets. Write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illustrative examples of observations
 ```{r}
 data("instacart") 
 instacart
 ```
-The size of the dataset `Instacart` is `r nrow(instacart)` observtaions and `r ncol(instacart)` variables. Key variables include all associated details of the order and the product acquired. 
+The size of the dataset `Instacart` is `r nrow(instacart)` observtaions and `r ncol(instacart)` variables. Key variables include all associated details of the order and the product acquired. The mean hour of day where orders were made is `r mean(pull(instacart, order_hour_of_day))`. THe median number of days between orders is `r median(pull(instacart, days_since_prior_order))`
 
 Answer the following (commenting on the results of each):
   -How many aisles are there, and which aisles are the most items ordered from?
@@ -28,12 +30,63 @@ Answer the following (commenting on the results of each):
 -Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table)
 
 ```{r}
-instacart %>%
+instacart_one=instacart %>%
   janitor::clean_names() %>%
   group_by(aisle_id, aisle) %>%
   summarize(n = n()) %>%
   arrange(desc(n))
+instacart_one
+```
+There are 134 aisles. Aisle 83, 24, 123 ane 120 are where the most items were ordered from. 
+
+```{r}
+aisle_scatter=
+  filter(instacart_one, n> 10000)
+  ggplot(aisle_scatter, aes(x = reorder(aisle, -n), y =n)) +
+  geom_point(color = "turquoise") +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1), 
+    axis.text = element_text(size = 7.5)) +
+  labs(
+    title = "Number of items ordered in each aisle",
+    x = "Aisle",
+    y = "Number of products"
+  )
+```
+```{r}
+insta_table=instacart %>%
+  filter(aisle == "baking ingredients" | 
+         aisle == "dog food care" | 
+         aisle == "packaged vegetables fruits") %>%
+  group_by(aisle, product_name) %>%
+  summarize(n = n()) %>%
+  mutate(n = min_rank(desc(n))) %>%
+  filter(n <4) %>%
+  knitr::kable ()
+insta_table
 ```
 
-There are `rnrow(instacart, aisle_id)` and aisle 24 and 83 are where the most items are ordered from. 
-  
+Problem 2: Load the BRFSS data. First, do some data cleaning:
+-Format the data to use appropriate variable names;
+-Focus on the “Overall Health” topic
+-Include only responses from “Excellent” to “Poor”
+-Organize responses as a factor taking levels ordered from “Poor” to “Excellent”
+
+```{r}
+data("brfss_smart2010")
+brfss_smart2010
+
+brfss_new=brfss_smart2010 %>%
+  janitor::clean_names() %>%
+  filter(topic == "Overall Health", 
+         response == "Excellent" | 
+         response == "Very good" | 
+         response == "Good"| 
+         response == "Fair"|
+         response == "Poor") %>%
+  mutate(response = factor(response, labels = c("Poor","Fair","Good","Very good", "Excellent" )))
+brfss_new
+```
+
+
+
