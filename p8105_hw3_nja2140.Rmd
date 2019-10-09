@@ -18,7 +18,7 @@ Problem 1: Instacart Data. Load the data from the p8105.datasets. Write a short 
 data("instacart") 
 instacart
 ```
-The size of the dataset `Instacart` is `r nrow(instacart)` observtaions and `r ncol(instacart)` variables. Key variables include all associated details of the order and the product acquired. The mean hour of day where orders were made is `r mean(pull(instacart, order_hour_of_day))`. THe median number of days between orders is `r median(pull(instacart, days_since_prior_order))`
+The size of the dataset `Instacart` is `r nrow(instacart)` observtaions and `r ncol(instacart)` variables. Key variables include all associated details of the order and the product acquired. The mean hour of day where orders were made is `r mean(pull(instacart, order_hour_of_day))`. Te median number of days between orders is `r median(pull(instacart, days_since_prior_order))`
 
 Answer the following (commenting on the results of each):
   -How many aisles are there, and which aisles are the most items ordered from?
@@ -37,7 +37,7 @@ instacart_one=instacart %>%
   arrange(desc(n))
 instacart_one
 ```
-There are 134 aisles. Aisle 83, 24, 123 ane 120 are where the most items were ordered from. 
+There are 134 aisles. Aisle 83, 24, 123 and 120 are where the most items were ordered from. 
 
 ```{r}
 aisle_scatter=
@@ -53,6 +53,7 @@ aisle_scatter=
     y = "Number of products"
   )
 ```
+
 ```{r}
 insta_table=instacart %>%
   filter(aisle == "baking ingredients" | 
@@ -60,11 +61,15 @@ insta_table=instacart %>%
          aisle == "packaged vegetables fruits") %>%
   group_by(aisle, product_name) %>%
   summarize(n = n()) %>%
-  mutate(n = min_rank(desc(n))) %>%
-  filter(n <4) %>%
+  top_n(3) %>%
+  arrange(desc(n)) %>%
   knitr::kable ()
 insta_table
 ```
+
+
+ filter(n <4) %>%
+  
 
 Problem 2: Load the BRFSS data. First, do some data cleaning:
 -Format the data to use appropriate variable names;
