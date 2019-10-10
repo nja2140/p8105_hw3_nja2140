@@ -170,5 +170,11 @@ two_dv=
   facet_grid(. ~year)
 two_dv
 ```
+Problem 3: Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
 
+```{r}
+acce_data = 
+  read_csv("./Data/accel_data.csv") %>%
+  janitor::clean_names() %>%
+```
 
