@@ -176,5 +176,7 @@ Problem 3: Load, tidy, and otherwise wrangle the data. Your final dataset should
 acce_data = 
   read_csv("./Data/accel_data.csv") %>%
   janitor::clean_names() %>%
+  mutate(dow = day == "Saturday" | day == "Sunday",
+         dow = ifelse(dow ==TRUE, "Weekend", "Weekday"))
+acce_data
 ```
-
