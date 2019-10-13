@@ -10,7 +10,6 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(p8105.datasets)
-library(ggridges)
 ```
 
 Problem 1: Instacart Data. Load the data from the p8105.datasets. Write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illustrative examples of observations
@@ -165,9 +164,14 @@ brfss_three
 
 two_dv=
   brfss_three %>%
-  ggplot(aes(x = response, y = data_value, color = year)) +
-  geom_point() +
-  facet_grid(. ~year)
+  ggplot(aes(x = response, y = data_value, color = response)) +
+  geom_boxplot() +
+  facet_grid(. ~year) +
+  labs(
+    title = "Distribution of Data Value Responses among locations in NY State",
+    x = "Response",
+    y = "Data Value"
+  )
 two_dv
 ```
 Problem 3: Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
@@ -178,7 +182,37 @@ acce_data =
   janitor::clean_names() %>%
   mutate(day = factor(day, labels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday",     "Saturday", "Sunday")), dow = day == "Saturday" | day == "Sunday",
          dow = ifelse(dow ==TRUE, "Weekend", "Weekday")) %>% 
-  select(week, day, dow, everything(), -day_id) 
+  select(week, day, dow, everything()) 
 acce_data
 ```
 The size of the dataset `acce_data` is `r nrow(acce_data)` observtaions and `r ncol(acce_data)` variables. Key variables include what week and day of the week the data was collected, and the accelerometer data for each minute of the day data was collected. 
+
+Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+
+```{r}
+accel_table = acce_data%>%
+  pivot_longer(activity_1:activity_1440,
+    names_to = "activity_minute",
+    values_to = "activity") %>% 
+  group_by(day_id, day, week, dow) %>% 
+  summarize(daily_activity=sum(activity)) 
+accel_table
+```
+From the table, we cannot observe any particular trends. 
+
+Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+```{r}
+plot_accel=
+  accel_table %>%
+  ggplot(aes(x = day_id, y = daily_activity, color = day)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "24 Hour Activity Time by Day for Five Weeks",
+    x = "Day_ID",
+    y = "Total Activity Tiime"
+  )
+plot_accel
+```
+From this graph, I can see that on certain day's of the week, such as Monday, Saturday and Sunday, the participant had a consistent amount of daily activity while days like Tuesday and Wednesday vary. 
+
